@@ -1,2 +1,5 @@
 .DS_Store
 .aider*
+/v0_app
+/my-osint-app/node_modules
+/node_modules
