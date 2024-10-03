@@ -38,6 +38,7 @@ export default function OsintSearch() {
       ]
 
       setResults(mockResults)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
       setError("An error occurred while searching. Please try again.")
     } finally {
