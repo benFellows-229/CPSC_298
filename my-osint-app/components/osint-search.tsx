@@ -14,6 +14,11 @@ interface SearchResult {
   link: string
 }
 
+interface Topic {
+  Text: string;
+  FirstURL: string;
+}
+
 export default function OsintSearch() {
   const [searchTerm, setSearchTerm] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -21,28 +26,37 @@ export default function OsintSearch() {
   const [results, setResults] = useState<SearchResult[]>([])
 
   const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError(null)
-    setResults([])
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+    setResults([]);
+
+    console.log("Searching for:", searchTerm); // Log the search term
 
     try {
-      // Simulating an API call with setTimeout
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      const response = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(searchTerm)}&format=json`);
+      const data = await response.json();
 
-      // Mock results
-      const mockResults: SearchResult[] = [
-        { id: 1, source: "Social Media", information: "Public profile found", link: "https://example.com/profile" },
-        { id: 2, source: "Data Breach", information: "Email found in breach database", link: "https://example.com/breach" },
-        { id: 3, source: "Public Records", information: "Address information found", link: "https://example.com/records" },
-      ]
+      console.log("API Response:", data); // Log the API response
 
-      setResults(mockResults)
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+      if (data.RelatedTopics && Array.isArray(data.RelatedTopics) && data.RelatedTopics.length > 0) {
+        const searchResults: SearchResult[] = data.RelatedTopics.map((topic: Topic, index: number) => ({
+          id: index,
+          source: topic.Text,
+          information: topic.FirstURL,
+          link: topic.FirstURL,
+        }));
+
+        setResults(searchResults);
+      } else {
+        // Set a positive message when no results are found
+        setError("No public data found for your query.");
+      }
     } catch (err) {
-      setError("An error occurred while searching. Please try again.")
+      console.error("Error fetching data:", err); // Log any errors
+      setError("An error occurred while searching. Please try again.");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
@@ -71,9 +85,9 @@ export default function OsintSearch() {
           </form>
 
           {error && (
-            <Alert variant="destructive" className="mt-4">
+            <Alert variant="success" className="mt-4">
               <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Error</AlertTitle>
+              <AlertTitle>Information</AlertTitle>
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
@@ -82,12 +96,12 @@ export default function OsintSearch() {
             <div className="mt-6 space-y-4">
               <h3 className="text-lg font-semibold">Search Results:</h3>
               {results.map((result) => (
-                <Card key={result.id}>
+                <Card key={result.id} className="border border-gray-300 shadow-md">
                   <CardHeader>
-                    <CardTitle className="text-md">{result.source}</CardTitle>
+                    <CardTitle className="text-md font-bold">{result.source}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p>{result.information}</p>
+                    <p className="text-sm">{result.information}</p>
                   </CardContent>
                   <CardFooter>
                     <a href={result.link} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
