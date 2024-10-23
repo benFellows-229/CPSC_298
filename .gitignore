@@ -1,3 +1,6 @@
 .DS_Store
 .aider*
-student_roster.csv
+/v0_app
+/my-osint-app/node_modules
+/node_modules
+/venv
